@@ -1,5 +1,6 @@
 ---
 title: "Tentang"
+format: html
 ---
 
 About this site

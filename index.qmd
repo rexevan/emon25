@@ -2,10 +2,4 @@
 title: "Employee of The Month 2025"
 ---
 
-This is a Quarto website.
-
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
-
-```{r}
-1 + 1
-```
+Selamat datang di situs Web Employee of The Month.
