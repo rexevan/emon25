@@ -3,12 +3,18 @@ project:
   output-dir: docs
 
 website:
-  title: "emon24"
+  title: "Empolyee of The Month 2025"
   navbar:
     left:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: Beranda
+      - href: 00-tentang.qmd
+        text: Tentang
+      - href: 01-januari.qmd
+        text: Januari
+      - href: 02-februari.qmd
+        text: Februari
+      
 
 format:
   html:
