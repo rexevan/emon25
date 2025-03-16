@@ -1,0 +1,15 @@
+---
+title: "Tahap Perencanaan"
+format: html
+---
+
+![Alur Pemilihan EMON](../img/alur-emon.png)
+
+# Perencanaan
+
+## Pengumpulan Data
+
+## Pengolahan Data 
+
+
+## Diseminasi

@@ -8,13 +8,12 @@ website:
     left:
       - href: index.qmd
         text: Beranda
-      - href: 00-tentang.qmd
+      - href: qmd/00-tentang.qmd
         text: Tentang
-      - href: 01-januari.qmd
-        text: Januari
-      - href: 02-februari.qmd
-        text: Februari
-      
+      - href: qmd/01_alur.qmd
+        text: Alur
+      - href: qmd/misc/ssn2024_03/rls.qmd
+        text: Rata-rata Lama Sekolah
 
 format:
   html:

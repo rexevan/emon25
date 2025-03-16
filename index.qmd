@@ -3,3 +3,6 @@ title: "Employee of The Month 2025"
 ---
 
 Selamat datang di situs Web Employee of The Month.
+
+
+![Alur pemberian Employee of the Month](img/alur-emon.png)
