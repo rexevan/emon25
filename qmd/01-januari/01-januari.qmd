@@ -1,0 +1,106 @@
+---
+title: "01-januari"
+format: html
+---
+
+# Pendahuluan
+
+Peraturan Pemerintah No. 11 tahun 2017 tentang manajemen PNS, menjelaskan bahwa Manajemen Pegawai Negeri Sipil adalah pengelolaan
+pegawai negeri sipil untuk menghasilkan pegawai negeri sipil yang profesional, memiliki nilai dasar, etika profesi, bebas dari intervensi politik, bersih dari praktik korupsi, kolusi, dan nepotisme.
+Salah satu bagian dari manajemen PNS adalah pemberian penghargaan.
+BPS Kabupaten Sikka membuat penghargaan *Employee of the Month* dengan tujuan mendorong pegawai untuk bekerja dengan lebih profesional, integritas, dan amanah.
+
+Berikut adalah tahapan secara keseluruhan dari Pemilihan EMON bulan Januari Tahun 2025.
+
+![Alur Pemilihan EMON](../img/alur-emon.png)
+
+# Perencanaan
+
+Pemilihan *Employee of the Month* (EMON) bulan januari tahun 2025 dimulai dengan terbitnya surat B-06A/53106/KP.390/2025 tentang  Pemilihan *Employee of the Month Bulan Januari Tahun 2025*.
+Ketua tim PMO diwajibkan untuk meniliai kinerja dari masing-masing anggota PMOnya.
+
+## Pengumpulan Data
+
+Terdapat 2 data yang dikumpulkan. 
+
+1. Data Rekap Presensi bulan Januari 2025
+Data dapat di download di BackOffice > Admin Mitra > Kepegawaian > Cetak Presensi > Rekap Presensi Unit Kerja
+
+2. Data Penilaian Ketua Tim PMO, yang telah diwajibkan dalam surat B-06A/53106/KP.390/2025
+
+## Pengolahan Data 
+
+Dengan menggunakan data yang telah dikumpulkan, indeks Emon dapat dihitung. 
+
+```{r setting-up}
+library(tidyverse)
+library(readxl)
+library(googledrive)
+library(magrittr)
+library(here)
+
+
+my_email <- "rex.evan96@gmail.com"
+```
+
+```{r pull-data}
+
+data_presensi <- here("qmd/01-januari/data_presensi.xlsx")
+data_response <- here("qmd/01-januari/data_response.xlsx")
+
+drive_find(n_max = 1, pattern = "21 Rekap Presensi Satker 1742443024793") %$%
+  name |>
+  drive_download(path = data_presensi, overwrite = TRUE)
+
+drive_find(n_max = 2, pattern = "Form Penilaian Employee Of The Month BPS Kabupaten Sikka") |> 
+  slice(1) |>
+  drive_download(path = data_response, overwrite = TRUE)
+
+```
+
+
+```{r read-data}
+
+tbl_presensi <- 
+read_xlsx(data_presensi, skip = 6) |>
+  janitor::clean_names() 
+
+tbl_presensi_hitung <- 
+tbl_presensi |>
+  select(nip, nama_presensi = nama, hk, psw, ht) |>
+  mutate(
+    hk = as.integer(hk),
+    psw = as.integer(psw),
+    ht = as.integer(ht),
+    persen = (ht + psw) / hk *100,
+    point = case_when(
+      persen < 1 ~ 3,
+      persen |> between(1, 10) ~ 1,
+      .default = 0    
+      ),
+    kehadiran = point * 0.4,
+    kedisiplinan = case_when(
+      nip == "340057264" ~ 0,
+      .default = 0.6
+    )
+    ) |>
+  select(nip, nama_presensi, kehadiran, kedisiplinan) |>
+  pivot_longer(cols = c(kehadiran, kedisiplinan), names_to = "atribut", values_to = "poin")
+
+
+```
+
+```{r response}
+
+tbl_response <- 
+read_xlsx(data_response) |>
+  janitor::clean_names() |>
+  filter(tahun_penilaian == "2025") |>
+  filter(pilih_bulan_penilaian == "Januari")
+
+tbl_response
+
+```
+
+
+## Diseminasi
