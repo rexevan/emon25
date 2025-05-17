@@ -8,7 +8,7 @@ editor: source
 ## Pendahuluan 
 
 
-```{r packages}
+```{r packages, message=FALSE}
 
 # install.packages("tidyverse")
 # install.packages("here")
@@ -36,7 +36,7 @@ kp_43 <- here("data/susenas-2024/5310_ssn_202403_kp_blok43.dbf") |> read.dbf() |
 ```
 
 
-*friendly reminder:* hati-hati dalam menggunakan estimasi yang memiliki nilai $RSE >= 25\%$ karena dinilai kurang akurat. Semakin tinggi $RSE$ bisa dibilang semakin tidak akurat estimatornya.
+*friendly reminder:* hati-hati dalam menggunakan estimasi yang memiliki nilai $RSE \geq 25\%$ karena dinilai kurang akurat. Semakin tinggi $RSE$ bisa dibilang semakin tidak akurat estimatornya.
 
 
 ## Persentase Pemuda (Umur 16 - 30 Tahun) yang tidak bersekolah lagi
@@ -50,20 +50,18 @@ Kode R610
 ```{r pemuda-16-30-selesai-sekolah}
 
 kor_ind1 |> 
-    select(R407, R610, FWT, PSU, SSU, STRATA ) |>
-    filter(R407 |> between(16, 30)) |> 
-    mutate(R610 = as.character(R610)) |>
-    as_survey_design(weights = FWT, strata = STRATA) |>
-    #as_survey_design(weights = FWT, ids = PSU) |>
-    #as_survey_design(weights = FWT, ids = c(PSU, SSU)) |>
-    summarise(pemuda = survey_total(R407), .by = R610) |>
-    mutate(rse = pemuda_se / pemuda * 100) |>
-    mutate(pct_pemuda = pemuda / sum(pemuda) * 100)
+  select(R407, R610, FWT, PSU, SSU, STRATA ) |>
+  filter(R407 |> between(16, 30)) |> 
+  as_survey_design(weights = FWT, strata = STRATA, ids = PSU) |>
+  survey_count(R610, vartype = c("se", "ci"), name = "pemuda") |>
+  mutate(rse = pemuda_se / pemuda * 100) |>
+  mutate(pct_pemuda = pemuda / sum(pemuda) * 100) |>
+  knitr::kable()
 
 ```
 
 
-### Persentase Pemuda Peserta Aktif JKN 
+## Persentase Pemuda Peserta Aktif JKN 
 
 Yang saya bisa temukan paling mendekati adalah R1109 dan R1204, yaitu apakah individu **menggunakan** bpjs. menggunakan berarti peserta aktif, tapi peserta aktif belum tentu menggunakan. Sehingga estimasi dibawah ini bisa jadi *underestimate*.
 
@@ -75,19 +73,27 @@ kor_ind1 |>
     R1109_A, R1109_B, R1204_A, R1204_B
   ) |>
   filter(R407 |> between(16,30)) |>
-  mutate(pakai_bpjs = if_else(is.na(R1109_A) & is.na(R1109_B) & is.na(R1204_A) & is.na(R1204_B), "Tidak", "Ya")) |>
-  as_survey_design(weights = FWT, ids = c(PSU, SSU), strata = STRATA) |> 
-  survey_count(pakai_bpjs) |>
+  mutate(
+    pakai_bpjs = if_else(
+      is.na(R1109_A) & is.na(R1109_B) & is.na(R1204_A) & is.na(R1204_B), 
+      "Tidak", 
+      "Ya"
+      )
+    )%>%
+  as_survey_design(weights = FWT, ids = PSU, strata = STRATA) |> 
+  survey_count(pakai_bpjs, vartype = c("se", "ci")) |>
   mutate(rse = n_se / n * 100) |>
-  mutate(pct = n / sum(n) * 100)
-
+  mutate(pct = n / sum(n) * 100) |>
+  knitr::kable()
 
 ```
 
 
-### Rumah Layak Huni
+## Rumah Layak Huni
 
-Sumber Script diambil dari : 
+Sudah ada angka *Official*-nya di [sikkakab.bps.go.id](https://sikkakab.bps.go.id/id/statistics-table/2/MzY5IzI=/persentase-rumah-tangga-yang-memiliki-akses-terhadap-hunian-layak-rumah-layak-huni-.html)
+
+
 Sumber  kondef diambil dari : https://www.bps.go.id/id/statistics-table/2/MTI0MSMy/persentase-rumah-tangga-yang-memiliki-akses-terhadap-hunian-yang-layak-menurut-provinsi.html
 Sejak tahun 2019, rumah tangga diklasifikasikan memiliki akses terhadap hunian/rumah layak huni apabila memenuhi 4 (empat) kriteria, yaitu:
 
@@ -144,6 +150,7 @@ survey_count(RLH) |>
 mutate(
     rse = n_se / n * 100,
     prop = n / sum(n) * 100
-)
+) |>
+  knitr::kable()
 
 ```

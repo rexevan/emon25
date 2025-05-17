@@ -47,5 +47,6 @@ rsconnect/
 
 /.quarto/
 /_site/
+data/
 /qmd/misc/
 /qmd/data/

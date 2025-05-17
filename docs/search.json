@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Employee of The Month 2025",
     "section": "",
-    "text": "Selamat datang di situs Web Employee of The Month.\n\n\n\nAlur pemberian Employee of the Month"
+    "text": "Selamat datang di situs Web Employee of The Month.\n\n\n\nAlur pemberian Employee of the Month\n\n\nTapi sepertinya situs ini sedang dipakai untuk urusan lain."
   },
   {
     "objectID": "qmd/misc/ssn2024_03/rls.html",
@@ -61,5 +61,96 @@
     "title": "Tahap Perencanaan",
     "section": "Diseminasi",
     "text": "Diseminasi"
+  },
+  {
+    "objectID": "qmd/indeks-pembangunan-pemuda-daerah.html",
+    "href": "qmd/indeks-pembangunan-pemuda-daerah.html",
+    "title": "Indeks Pembangunan Pemuda Daerah",
+    "section": "",
+    "text": "# install.packages(\"tidyverse\")\n# install.packages(\"here\")\n# install.packages(\"srvyr\")\n# install.packages(\"foreign\")\n#\n\nlibrary(tidyverse)\nlibrary(here)\nlibrary(srvyr)\nlibrary(foreign)"
+  },
+  {
+    "objectID": "qmd/indeks-pembangunan-pemuda-daerah.html#pendahuluan",
+    "href": "qmd/indeks-pembangunan-pemuda-daerah.html#pendahuluan",
+    "title": "Indeks Pembangunan Pemuda Daerah",
+    "section": "",
+    "text": "# install.packages(\"tidyverse\")\n# install.packages(\"here\")\n# install.packages(\"srvyr\")\n# install.packages(\"foreign\")\n#\n\nlibrary(tidyverse)\nlibrary(here)\nlibrary(srvyr)\nlibrary(foreign)"
+  },
+  {
+    "objectID": "qmd/indeks-pembangunan-pemuda-daerah.html#input-data",
+    "href": "qmd/indeks-pembangunan-pemuda-daerah.html#input-data",
+    "title": "Indeks Pembangunan Pemuda Daerah",
+    "section": "Input Data",
+    "text": "Input Data\n\nkor_ind1 &lt;- here(\"data/susenas-2024/5310_ssn_202403_kor_ind1.dbf\") |&gt; read.dbf() |&gt; as_tibble()\nkor_ind2 &lt;- here(\"data/susenas-2024/5310_ssn_202403_kor_ind2.dbf\") |&gt; read.dbf() |&gt; as_tibble()\nkor_ruta &lt;- here(\"data/susenas-2024/5310_ssn_202403_kor_rt.dbf\") |&gt; read.dbf() |&gt; as_tibble()\n\nkp_43 &lt;- here(\"data/susenas-2024/5310_ssn_202403_kp_blok43.dbf\") |&gt; read.dbf() |&gt; as_tibble()\n\nfriendly reminder: hati-hati dalam menggunakan estimasi yang memiliki nilai \\(RSE \\geq 25\\%\\) karena dinilai kurang akurat. Semakin tinggi \\(RSE\\) bisa dibilang semakin tidak akurat estimatornya."
+  },
+  {
+    "objectID": "qmd/indeks-pembangunan-pemuda-daerah.html#persentase-pemuda-umur-16---30-tahun-yang-tidak-bersekolah-lagi",
+    "href": "qmd/indeks-pembangunan-pemuda-daerah.html#persentase-pemuda-umur-16---30-tahun-yang-tidak-bersekolah-lagi",
+    "title": "Indeks Pembangunan Pemuda Daerah",
+    "section": "Persentase Pemuda (Umur 16 - 30 Tahun) yang tidak bersekolah lagi",
+    "text": "Persentase Pemuda (Umur 16 - 30 Tahun) yang tidak bersekolah lagi\nKode R610\n\nBelum Sekolah atau Tidak pernah Sekolah\nSedang Bersekolah\nSudah Tidak Bersekolah Lagi\n\n\nkor_ind1 |&gt; \n  select(R407, R610, FWT, PSU, SSU, STRATA ) |&gt;\n  filter(R407 |&gt; between(16, 30)) |&gt; \n  as_survey_design(weights = FWT, strata = STRATA, ids = PSU) |&gt;\n  survey_count(R610, vartype = c(\"se\", \"ci\"), name = \"pemuda\") |&gt;\n  mutate(rse = pemuda_se / pemuda * 100) |&gt;\n  mutate(pct_pemuda = pemuda / sum(pemuda) * 100) |&gt;\n  knitr::kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\nR610\npemuda\npemuda_se\npemuda_low\npemuda_upp\nrse\npct_pemuda\n\n\n\n\n1\n175.7954\n124.3489\n-72.93951\n424.5303\n70.73503\n0.2336758\n\n\n2\n23185.8995\n2422.1090\n18340.96008\n28030.8388\n10.44647\n30.8198206\n\n\n3\n51868.7867\n5384.0435\n41099.09626\n62638.4772\n10.38012\n68.9465036"
+  },
+  {
+    "objectID": "qmd/04-mengolah-data-dngan-stata-r.html",
+    "href": "qmd/04-mengolah-data-dngan-stata-r.html",
+    "title": "Mengolah data dengan Stata (R)",
+    "section": "",
+    "text": "Ini adalah catatan saya dari zoom meeting mengolah data dengan stata. Saya mencoba sintaks dari stata ke dalam R.\nhttps://www.youtube.com/watch?v=oHUWxkHnNSk\nmerge di Stata = _join di R\nWI1 = pembeda untuk nomor NKS (Nomor Kode Sampel)\n\nCodebook\nterdapat paket codebook yang dipakai untuk melakukan summary, missing values untuk kolom yang banyak\n\n\nSurvey Data Analysis\ndi Stata Statistics &gt;&gt; Survey Data Analysis &gt;&gt; Setup and Utilities\ndi R (pake srvyr) data |&gt; as_survey_design(ids = PSU, strata = STRATA, weight = WEIGHT)\nJika tidak ada PSU (Primary Sampling Unit), maka buatkan. PSU adalah gabungan dari variabel Provinsi, Kabupaten/Kota, dan NKS NKS adalah wI1 PSU = str_c(PROV, KAB, WI1)\nsementara SSU (secondary sampling unit) adalah gabungan dari psu ditambah WI2 (informasi rumah tangga) SSU = str_c(psu,WI2)\nSTRATA adalah gabungan dari PROV, KAB, dan R105 STRATA = str_c(PROV, KAB, R105)\ndalam menghitung standar error, BPS mengunakan rumus perhitungan linearization taylor\nbtw, variabel FWT di dataset susenas kor sudah menggabungkan stage 1 dan stage 2 sehingga perhitungan hanya membutuhkan PSU.\ndata |&gt; as_survey_design(ids = PSU, strata = STRATA, weight = FWT)\nconfidence intervalnya pakai yang wald\nsurvey_xxx(vartype = c(\"se\", \"ci\"), level = 0.95)"
+  },
+  {
+    "objectID": "qmd/olah-data-sakernas.html",
+    "href": "qmd/olah-data-sakernas.html",
+    "title": "olah-data-sakernas",
+    "section": "",
+    "text": "# install.packages(\"tidyverse\")\n# install.packages(\"here\")\n# install.packages(\"srvyr\")\n# install.packages(\"foreign\")\n#\n\nlibrary(tidyverse)\nlibrary(here)\nlibrary(srvyr)\nlibrary(foreign)"
+  },
+  {
+    "objectID": "qmd/olah-data-sakernas.html#input-data",
+    "href": "qmd/olah-data-sakernas.html#input-data",
+    "title": "olah-data-sakernas",
+    "section": "Input Data",
+    "text": "Input Data\n\nsak24_1 &lt;- here(\"data/sakernas-2024/sakernas202408_15_part1_5310.dbf\") |&gt; read.dbf() |&gt; as_tibble()\n\nsak24_2 &lt;- here(\"data/sakernas-2024/sakernas202408_15_part2_5310.dbf\") |&gt; read.dbf() |&gt; as_tibble()"
+  },
+  {
+    "objectID": "qmd/04-olah-data-stata-r.html",
+    "href": "qmd/04-olah-data-stata-r.html",
+    "title": "Mengolah data dengan Stata (R)",
+    "section": "",
+    "text": "Ini adalah catatan saya dari zoom meeting mengolah data dengan stata. Saya mencoba sintaks dari stata ke dalam R.\nhttps://www.youtube.com/watch?v=oHUWxkHnNSk\nmerge di Stata = _join di R\nWI1 = pembeda untuk nomor NKS (Nomor Kode Sampel)\n\nCodebook\nterdapat paket codebook yang dipakai untuk melakukan summary, missing values untuk kolom yang banyak\n\n\nSurvey Data Analysis\ndi Stata Statistics &gt;&gt; Survey Data Analysis &gt;&gt; Setup and Utilities\ndi R (pake srvyr) data |&gt; as_survey_design(ids = PSU, strata = STRATA, weight = WEIGHT)\nJika tidak ada PSU (Primary Sampling Unit), maka buatkan. PSU adalah gabungan dari variabel Provinsi, Kabupaten/Kota, dan NKS NKS adalah wI1\nPSU = str_c(PROV, KAB, WI1)\nsementara SSU (secondary sampling unit) adalah gabungan dari psu ditambah WI2 (informasi rumah tangga)\nSSU = str_c(psu,WI2)\nSTRATA adalah gabungan dari PROV, KAB, dan R105\nSTRATA = str_c(PROV, KAB, R105)\ndalam menghitung standar error, BPS mengunakan rumus perhitungan linearization taylor\nbtw, variabel FWT di dataset susenas kor sudah menggabungkan stage 1 dan stage 2 sehingga perhitungan hanya membutuhkan PSU.\ndata |&gt; as_survey_design(ids = PSU, strata = STRATA, weight = FWT)\nconfidence intervalnya pakai yang wald\nsurvey_xxx(vartype = c(\"se\", \"ci\"), level = 0.95)"
+  },
+  {
+    "objectID": "qmd/olah-data-sakernas.html#pendahulan",
+    "href": "qmd/olah-data-sakernas.html#pendahulan",
+    "title": "olah-data-sakernas",
+    "section": "",
+    "text": "# install.packages(\"tidyverse\")\n# install.packages(\"here\")\n# install.packages(\"srvyr\")\n# install.packages(\"foreign\")\n#\n\nlibrary(tidyverse)\nlibrary(here)\nlibrary(srvyr)\nlibrary(foreign)"
+  },
+  {
+    "objectID": "qmd/olah-data-sakernas.html#presentase-pekerja-lulusan-menengah-dan-tinggi-yang-bekerja-di-bidang-keahlian-menengah-tinggi",
+    "href": "qmd/olah-data-sakernas.html#presentase-pekerja-lulusan-menengah-dan-tinggi-yang-bekerja-di-bidang-keahlian-menengah-tinggi",
+    "title": "olah-data-sakernas",
+    "section": "Presentase Pekerja Lulusan Menengah dan Tinggi yang bekerja di bidang Keahlian menengah tinggi",
+    "text": "Presentase Pekerja Lulusan Menengah dan Tinggi yang bekerja di bidang Keahlian menengah tinggi\nsebenarnya saya juga tidak tahu sih maksud dari lulusan menengah dan tinggi disini. saya coba aja dulu.\n\nsak24_1 |&gt; \n  select(\n    WEIGHT, STRATA, PSU,\n    K10, \n    R6A, R15A_KBLI2, R15B_KBJI1, R10A, R10B, R10C, R11\n    ) |&gt;\n  mutate(\n    R10A = if_else(R10A == 1, 1, 0), \n    R10B = if_else(R10B == 1, 1, 0),\n    R10C = if_else(R10C == 1, 1, 0),\n    R11 = if_else(R11 == 1, 1, 0),\n    poin = R10A + R10B + R10C + R11,\n    bekerja = if_else(poin &gt;= 1, 1, 0)\n  ) |&gt;\n  filter(bekerja == 1) |&gt;\n  filter(R6A &gt;= 3) |&gt;\n  filter(K10 &gt;= 15) |&gt;\n  mutate(\n    tingkat = case_when(\n      R6A |&gt; between(3, 6) ~ \"menengah\",\n      R6A &gt;= 7 ~ \"tinggi\",\n      .default = NA_character_\n    )\n  ) |&gt;\n  as_survey_design(weights = WEIGHT, ids = PSU, strata = STRATA) |&gt;\n  group_by(tingkat, R15A_KBLI2) |&gt;\n  survey_tally(name = \"jumlah\") |&gt;\n  mutate(\n    rse = jumlah_se / jumlah * 100\n  ) |&gt;\n  knitr::kable()\n\n\n\n\ntingkat\nR15A_KBLI2\njumlah\njumlah_se\nrse\n\n\n\n\nmenengah\n1\n19044\n1861.4074\n9.774246\n\n\nmenengah\n2\n511\n511.0000\n100.000000\n\n\nmenengah\n3\n6694\n1364.4561\n20.383270\n\n\nmenengah\n5\n485\n334.4296\n68.954564\n\n\nmenengah\n6\n3661\n905.2466\n24.726758\n\n\nmenengah\n7\n10806\n1840.4440\n17.031686\n\n\nmenengah\n8\n5282\n961.1259\n18.196250\n\n\nmenengah\n9\n1363\n561.1442\n41.169790\n\n\nmenengah\n10\n171\n171.0000\n100.000000\n\n\nmenengah\n11\n777\n466.8672\n60.085871\n\n\nmenengah\n13\n540\n315.4947\n58.424952\n\n\nmenengah\n14\n4487\n1024.6879\n22.836815\n\n\nmenengah\n15\n1727\n531.6506\n30.784632\n\n\nmenengah\n17\n1429\n533.5377\n37.336437\n\n\ntinggi\n1\n2425\n754.9688\n31.132733\n\n\ntinggi\n4\n128\n128.0000\n100.000000\n\n\ntinggi\n5\n193\n193.0000\n100.000000\n\n\ntinggi\n6\n168\n168.0000\n100.000000\n\n\ntinggi\n7\n2477\n777.7096\n31.397238\n\n\ntinggi\n8\n373\n276.8483\n74.222073\n\n\ntinggi\n10\n89\n89.0000\n100.000000\n\n\ntinggi\n11\n1460\n703.5803\n48.190433\n\n\ntinggi\n14\n4642\n1183.6289\n25.498253\n\n\ntinggi\n15\n7387\n1723.7753\n23.335256\n\n\ntinggi\n16\n4260\n1306.7895\n30.675810"
+  },
+  {
+    "objectID": "qmd/olah-data-sakernas.html#persentase-penyandang-disabilitas-bekerja-di-sektor-formal",
+    "href": "qmd/olah-data-sakernas.html#persentase-penyandang-disabilitas-bekerja-di-sektor-formal",
+    "title": "olah-data-sakernas",
+    "section": "Persentase penyandang disabilitas bekerja di sektor formal",
+    "text": "Persentase penyandang disabilitas bekerja di sektor formal\nMenurut BPS (Badan Pusat Statistik), sektor formal adalah pekerjaan yang memiliki status buruh/karyawan atau berusaha sendiri dibantu buruh tetap. Sebaliknya, sektor informal mencakup mereka yang berstatus berusaha sendiri, berusaha dibantu buruh tidak tetap, pekerja bebas, dan pekerja keluarga\n\nsak24_1 |&gt;\n  filter(K10 &gt;= 15) |&gt; \n  mutate(\n    bekerja = \n      if_else(\n        R10A == 1 | R10B == 1 | R10C == 1 | R11 == 1,\n        1, \n        0\n      )\n    ) |&gt;\n  filter(bekerja == 1) |&gt;\n  mutate(\n    disabilitas = \n      if_else (\n        R8A &lt;= 3 | R8B &lt;= 7 | R8C &lt;= 3 | R8D &lt;= 7 | R8E &lt;= 3 | R8F &lt;= 7,\n        \"Difabel\", \n        \"Tidak Dibafel\"\n      )\n  ) |&gt;\n  mutate(\n    status = \n      if_else(\n        R14A %in% c(3, 4),\n        \"formal\",\n        \"Informal\"\n      )\n  ) |&gt;\n  as_survey_design(weights = WEIGHT, ids = PSU, strata = STRATA) |&gt;\n  group_by(disabilitas, status) |&gt;\n  survey_tally(name = \"jumlah\") |&gt;\n  mutate(\n    rse = jumlah_se / jumlah * 100\n  ) |&gt;\n  knitr::kable()\n\n\n\n\ndisabilitas\nstatus\njumlah\njumlah_se\nrse\n\n\n\n\nDifabel\nInformal\n13551\n2395.4410\n17.677227\n\n\nDifabel\nformal\n1876\n590.1124\n31.455885\n\n\nTidak Dibafel\nInformal\n114393\n5854.4094\n5.117804\n\n\nTidak Dibafel\nformal\n46074\n4342.2653\n9.424546"
+  },
+  {
+    "objectID": "qmd/indeks-pembangunan-pemuda-daerah.html#persentase-pemuda-peserta-aktif-jkn",
+    "href": "qmd/indeks-pembangunan-pemuda-daerah.html#persentase-pemuda-peserta-aktif-jkn",
+    "title": "Indeks Pembangunan Pemuda Daerah",
+    "section": "Persentase Pemuda Peserta Aktif JKN",
+    "text": "Persentase Pemuda Peserta Aktif JKN\nYang saya bisa temukan paling mendekati adalah R1109 dan R1204, yaitu apakah individu menggunakan bpjs. menggunakan berarti peserta aktif, tapi peserta aktif belum tentu menggunakan. Sehingga estimasi dibawah ini bisa jadi underestimate.\n\nkor_ind1 |&gt;\n  select(\n    STRATA, PSU, SSU, FWT, R407,\n    R1109_A, R1109_B, R1204_A, R1204_B\n  ) |&gt;\n  filter(R407 |&gt; between(16,30)) |&gt;\n  mutate(\n    pakai_bpjs = if_else(\n      is.na(R1109_A) & is.na(R1109_B) & is.na(R1204_A) & is.na(R1204_B), \n      \"Tidak\", \n      \"Ya\"\n      )\n    )%&gt;%\n  as_survey_design(weights = FWT, ids = PSU, strata = STRATA) |&gt; \n  survey_count(pakai_bpjs, vartype = c(\"se\", \"ci\")) |&gt;\n  mutate(rse = n_se / n * 100) |&gt;\n  mutate(pct = n / sum(n) * 100) |&gt;\n  knitr::kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\npakai_bpjs\nn\nn_se\nn_low\nn_upp\nrse\npct\n\n\n\n\nTidak\n69120.917\n5798.723\n57521.743\n80720.091\n8.389245\n91.878871\n\n\nYa\n6109.564\n1098.020\n3913.198\n8305.931\n17.972148\n8.121129"
+  },
+  {
+    "objectID": "qmd/indeks-pembangunan-pemuda-daerah.html#rumah-layak-huni",
+    "href": "qmd/indeks-pembangunan-pemuda-daerah.html#rumah-layak-huni",
+    "title": "Indeks Pembangunan Pemuda Daerah",
+    "section": "Rumah Layak Huni",
+    "text": "Rumah Layak Huni\nSudah ada angka Official-nya di sikkakab.bps.go.id\nSumber kondef diambil dari : https://www.bps.go.id/id/statistics-table/2/MTI0MSMy/persentase-rumah-tangga-yang-memiliki-akses-terhadap-hunian-yang-layak-menurut-provinsi.html Sejak tahun 2019, rumah tangga diklasifikasikan memiliki akses terhadap hunian/rumah layak huni apabila memenuhi 4 (empat) kriteria, yaitu:\n\nmemiliki akses terhadap sanitasi layak\nmemiliki akses terhadap air minum layak\nkecukupan luas tempat tinggal minimal 7,2 m2 per kapita (sufficient living space)\nketahanan bangunan (durable housing), yaitu atap terluas berupa beton/ genteng/ seng/ kayu/ sirap; dinding terluas berupa tembok/ plesteran anyaman bambu/kawat, kayu/papan dan batang kayu; dan lantai terluas berupa marmer/ granit/ keramik/ parket/vinil/karpet/ ubin/tegel/teraso/ kayu/papan/ semen/bata merah.\n\n\ntbl_rlh &lt;- \nkor_ruta |&gt;\n  mutate(\n    indic1_layak = case_when(\n      R1809A &lt;= 3 & R1809B == 1 & R1809C &lt;= 2 ~ 100,\n      R105 == 2 & R1809A &lt;= 3 & R1809C == 4 ~ 100, \n      .default = 0\n      )\n    ) |&gt;\n  mutate(\n    drinkw  = if_else(R1810A %in% c(3, 4, 5, 7, 10), 100, 0),\n    bottle  = if_else(R1810A %in% c(1, 2), 100, 0),\n    bathing = if_else(R1814A %in% c(3, 4, 5, 7, 10), 100, 0),\n    indic2_layak = if_else( drinkw == 100 | (bottle == 100 & bathing == 100), 100, 0)\n  ) |&gt;\n  mutate(\n    luas_cap = R1804/R301,\n    indic3_layak = if_else(luas_cap &gt;= 7.20, 100, 0)\n  ) |&gt;\n  mutate(\n    roof  = if_else(R1806A %in% c(1, 2, 3, 6), 100, 0),\n    wall  = if_else(R1807 %in% c(1, 2, 3, 5), 100, 0),\n    floor = if_else(R1808 %in% c(1, 2, 3, 4, 5, 6), 100, 0),\n    indic4_layak = if_else( roof == 100 & floor == 100 & wall == 100, 100, 0)\n  ) |&gt;\n  mutate(\n    RLH = if_else(\n      indic1_layak == 100 & \n        indic2_layak == 100 & \n        indic3_layak == 100 &\n        indic4_layak == 100, \n      \"Layak\", \n      \"Tidak Layak\"\n    )\n  )\n\ntbl_rlh |&gt; \nselect(RLH, PSU, STRATA, FWT) |&gt; \nas_survey_design(strata = STRATA, weights = FWT, ids = PSU)  |&gt;  \nmutate(RLH = as.character(RLH)) |&gt;\nsurvey_count(RLH) |&gt;\nmutate(\n    rse = n_se / n * 100,\n    prop = n / sum(n) * 100\n) |&gt;\n  knitr::kable()\n\n\n\n\nRLH\nn\nn_se\nrse\nprop\n\n\n\n\nLayak\n26662.22\n2311.800\n8.670694\n38.05962\n\n\nTidak Layak\n43391.60\n2340.493\n5.393885\n61.94038"
   }
 ]

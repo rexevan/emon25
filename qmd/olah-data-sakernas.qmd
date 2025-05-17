@@ -4,9 +4,9 @@ format: html
 editor: source
 ---
 
+## Pendahulan
 
-
-```{r packages}
+```{r packages, message=FALSE}
 
 # install.packages("tidyverse")
 # install.packages("here")
@@ -31,16 +31,12 @@ sak24_2 <- here("data/sakernas-2024/sakernas202408_15_part2_5310.dbf") |> read.d
 
 ```
 
-### Presentase Pekerja Lulusan Menengah dan Tinggi yang bekerja di bidang Keahlian menengah tinggi
+## Presentase Pekerja Lulusan Menengah dan Tinggi yang bekerja di bidang Keahlian menengah tinggi
 
 sebenarnya saya juga tidak tahu sih maksud dari lulusan menengah dan tinggi disini. saya coba aja dulu.
 
 
 ```{r bekerja-lulusan-kbli}
-names(sak24_1)
-
-as_survey_design(weights = WEIGHT, ids = PSU, strata = STRATA)
-
 sak24_1 |> 
   select(
     WEIGHT, STRATA, PSU,
@@ -70,11 +66,12 @@ sak24_1 |>
   survey_tally(name = "jumlah") |>
   mutate(
     rse = jumlah_se / jumlah * 100
-  )
+  ) |>
+  knitr::kable()
 
 ```
 
-### Persentase penyandang disabilitas bekerja di sektor formal
+## Persentase penyandang disabilitas bekerja di sektor formal
 
 Menurut BPS (Badan Pusat Statistik), sektor formal adalah pekerjaan yang memiliki status buruh/karyawan atau berusaha sendiri dibantu buruh tetap. Sebaliknya, sektor informal mencakup mereka yang berstatus berusaha sendiri, berusaha dibantu buruh tidak tetap, pekerja bebas, dan pekerja keluarga
 
@@ -94,9 +91,9 @@ sak24_1 |>
   mutate(
     disabilitas = 
       if_else (
-      R8A <= 3 | R8B <= 7 | R8C <= 3 | R8D <= 7 | R8E <= 3 | R8F <= 7,
-      "Difabel", 
-      "Tidak Dibafel"
+        R8A <= 3 | R8B <= 7 | R8C <= 3 | R8D <= 7 | R8E <= 3 | R8F <= 7,
+        "Difabel", 
+        "Tidak Dibafel"
       )
   ) |>
   mutate(
@@ -112,39 +109,7 @@ sak24_1 |>
   survey_tally(name = "jumlah") |>
   mutate(
     rse = jumlah_se / jumlah * 100
-  )
+  ) |>
+  knitr::kable()
   
 ```
-
-
-
-## extra
-
-
-
-```{r}
-
-sak24_1 |>
-  mutate(
-    R10A = if_else(R10A == 1, 1, 0), 
-    R10B = if_else(R10B == 1, 1, 0),
-    R10C = if_else(R10C == 1, 1, 0),
-    R11 = if_else(R11 == 1, 1, 0),
-    poin = R10A + R10B + R10C + R11,
-    bekerja1 = if_else(poin >= 1, 1, 0)
-  ) |>
-  mutate(
-    bekerja = 
-      if_else(
-        R10A == 1 | R10B == 1 | R10C == 1 | R11 == 1,
-        1, 
-        0
-      )
-  ) |>
-  select(bekerja1, bekerja2) |>
-  mutate(sama =  bekerja1 - bekerja2) |>
-  View()
-
-
-```
-

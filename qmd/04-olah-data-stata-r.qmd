@@ -1,0 +1,51 @@
+---
+title: "Mengolah data dengan Stata (R)"
+format: html
+editor: source
+---
+
+Ini adalah catatan saya dari zoom meeting mengolah data dengan stata.
+Saya mencoba sintaks dari stata ke dalam R.
+
+https://www.youtube.com/watch?v=oHUWxkHnNSk
+
+merge di Stata = _join di R 
+
+WI1 = pembeda untuk nomor NKS (Nomor Kode Sampel)
+
+
+# Codebook
+
+terdapat paket `codebook` yang dipakai untuk melakukan summary, missing values untuk kolom yang banyak 
+
+# Survey Data Analysis 
+
+di Stata
+Statistics >> Survey Data Analysis >> Setup and Utilities 
+
+di R (pake srvyr)
+`data |> as_survey_design(ids = PSU, strata = STRATA, weight = WEIGHT)`
+
+Jika tidak ada PSU (Primary Sampling Unit), maka buatkan.
+**PSU adalah gabungan dari variabel Provinsi, Kabupaten/Kota, dan NKS**
+NKS adalah wI1
+
+`PSU = str_c(PROV, KAB, WI1)`
+
+sementara SSU (secondary sampling unit) adalah gabungan dari psu ditambah WI2 (informasi rumah tangga)
+
+`SSU = str_c(psu,WI2)`
+
+STRATA adalah gabungan dari PROV, KAB, dan R105
+
+`STRATA = str_c(PROV, KAB, R105)`
+
+dalam menghitung standar error, BPS mengunakan rumus perhitungan linearization taylor
+
+btw, variabel FWT di dataset susenas kor sudah menggabungkan stage 1 dan stage 2 sehingga perhitungan hanya membutuhkan PSU.
+
+`data |> as_survey_design(ids = PSU, strata = STRATA, weight = FWT)`
+
+confidence intervalnya pakai yang wald
+
+`survey_xxx(vartype = c("se", "ci"), level = 0.95)`
