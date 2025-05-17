@@ -1,0 +1,149 @@
+---
+title: "Indeks Pembangunan Pemuda Daerah"
+format: html
+editor: source
+---
+
+
+## Pendahuluan 
+
+
+```{r packages}
+
+# install.packages("tidyverse")
+# install.packages("here")
+# install.packages("srvyr")
+# install.packages("foreign")
+#
+
+library(tidyverse)
+library(here)
+library(srvyr)
+library(foreign)
+
+```
+
+## Input Data
+
+
+```{r input-data}
+kor_ind1 <- here("data/susenas-2024/5310_ssn_202403_kor_ind1.dbf") |> read.dbf() |> as_tibble()
+kor_ind2 <- here("data/susenas-2024/5310_ssn_202403_kor_ind2.dbf") |> read.dbf() |> as_tibble()
+kor_ruta <- here("data/susenas-2024/5310_ssn_202403_kor_rt.dbf") |> read.dbf() |> as_tibble()
+
+kp_43 <- here("data/susenas-2024/5310_ssn_202403_kp_blok43.dbf") |> read.dbf() |> as_tibble()
+
+```
+
+
+*friendly reminder:* hati-hati dalam menggunakan estimasi yang memiliki nilai $RSE >= 25\%$ karena dinilai kurang akurat. Semakin tinggi $RSE$ bisa dibilang semakin tidak akurat estimatornya.
+
+
+## Persentase Pemuda (Umur 16 - 30 Tahun) yang tidak bersekolah lagi
+
+Kode R610
+
+1. Belum Sekolah atau Tidak pernah Sekolah
+2. Sedang Bersekolah
+3. Sudah Tidak Bersekolah Lagi
+
+```{r pemuda-16-30-selesai-sekolah}
+
+kor_ind1 |> 
+    select(R407, R610, FWT, PSU, SSU, STRATA ) |>
+    filter(R407 |> between(16, 30)) |> 
+    mutate(R610 = as.character(R610)) |>
+    as_survey_design(weights = FWT, strata = STRATA) |>
+    #as_survey_design(weights = FWT, ids = PSU) |>
+    #as_survey_design(weights = FWT, ids = c(PSU, SSU)) |>
+    summarise(pemuda = survey_total(R407), .by = R610) |>
+    mutate(rse = pemuda_se / pemuda * 100) |>
+    mutate(pct_pemuda = pemuda / sum(pemuda) * 100)
+
+```
+
+
+### Persentase Pemuda Peserta Aktif JKN 
+
+Yang saya bisa temukan paling mendekati adalah R1109 dan R1204, yaitu apakah individu **menggunakan** bpjs. menggunakan berarti peserta aktif, tapi peserta aktif belum tentu menggunakan. Sehingga estimasi dibawah ini bisa jadi *underestimate*.
+
+```{r pemuda-jkn}
+
+kor_ind1 |>
+  select(
+    STRATA, PSU, SSU, FWT, R407,
+    R1109_A, R1109_B, R1204_A, R1204_B
+  ) |>
+  filter(R407 |> between(16,30)) |>
+  mutate(pakai_bpjs = if_else(is.na(R1109_A) & is.na(R1109_B) & is.na(R1204_A) & is.na(R1204_B), "Tidak", "Ya")) |>
+  as_survey_design(weights = FWT, ids = c(PSU, SSU), strata = STRATA) |> 
+  survey_count(pakai_bpjs) |>
+  mutate(rse = n_se / n * 100) |>
+  mutate(pct = n / sum(n) * 100)
+
+
+```
+
+
+### Rumah Layak Huni
+
+Sumber Script diambil dari : 
+Sumber  kondef diambil dari : https://www.bps.go.id/id/statistics-table/2/MTI0MSMy/persentase-rumah-tangga-yang-memiliki-akses-terhadap-hunian-yang-layak-menurut-provinsi.html
+Sejak tahun 2019, rumah tangga diklasifikasikan memiliki akses terhadap hunian/rumah layak huni apabila memenuhi 4 (empat) kriteria, yaitu:
+
+- memiliki akses terhadap sanitasi layak
+- memiliki akses terhadap air minum layak
+- kecukupan luas tempat tinggal minimal 7,2 m2 per kapita (sufficient living space)
+- ketahanan bangunan (durable housing), yaitu atap terluas berupa beton/ genteng/ seng/ kayu/ sirap; dinding terluas berupa tembok/ plesteran anyaman bambu/kawat, kayu/papan dan batang kayu; dan lantai terluas berupa marmer/ granit/ keramik/ parket/vinil/karpet/ ubin/tegel/teraso/ kayu/papan/ semen/bata merah.
+
+
+
+```{r}
+
+tbl_rlh <- 
+kor_ruta |>
+  mutate(
+    indic1_layak = case_when(
+      R1809A <= 3 & R1809B == 1 & R1809C <= 2 ~ 100,
+      R105 == 2 & R1809A <= 3 & R1809C == 4 ~ 100, 
+      .default = 0
+      )
+    ) |>
+  mutate(
+    drinkw  = if_else(R1810A %in% c(3, 4, 5, 7, 10), 100, 0),
+    bottle  = if_else(R1810A %in% c(1, 2), 100, 0),
+    bathing = if_else(R1814A %in% c(3, 4, 5, 7, 10), 100, 0),
+    indic2_layak = if_else( drinkw == 100 | (bottle == 100 & bathing == 100), 100, 0)
+  ) |>
+  mutate(
+    luas_cap = R1804/R301,
+    indic3_layak = if_else(luas_cap >= 7.20, 100, 0)
+  ) |>
+  mutate(
+    roof  = if_else(R1806A %in% c(1, 2, 3, 6), 100, 0),
+    wall  = if_else(R1807 %in% c(1, 2, 3, 5), 100, 0),
+    floor = if_else(R1808 %in% c(1, 2, 3, 4, 5, 6), 100, 0),
+    indic4_layak = if_else( roof == 100 & floor == 100 & wall == 100, 100, 0)
+  ) |>
+  mutate(
+    RLH = if_else(
+      indic1_layak == 100 & 
+        indic2_layak == 100 & 
+        indic3_layak == 100 &
+        indic4_layak == 100, 
+      "Layak", 
+      "Tidak Layak"
+    )
+  )
+
+tbl_rlh |> 
+select(RLH, PSU, STRATA, FWT) |> 
+as_survey_design(strata = STRATA, weights = FWT, ids = PSU)  |>  
+mutate(RLH = as.character(RLH)) |>
+survey_count(RLH) |>
+mutate(
+    rse = n_se / n * 100,
+    prop = n / sum(n) * 100
+)
+
+```
